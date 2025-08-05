@@ -26,7 +26,7 @@ class ReportRequest extends FormRequest
         return [
             'type' => 'nullable|in:income,outcome',
             'period' => 'nullable|in:day,week,month,year',
-            'category' => 'nullable|string|max:100',
+            'category_id' => 'nullable|string|max:100',
         ];
     }
 

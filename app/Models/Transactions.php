@@ -14,7 +14,7 @@ class Transactions extends Model
         'description',
         'value',
         'registerType',
-        'category',
+        'category_id',
     ];
 
 
@@ -32,4 +32,8 @@ class Transactions extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function category()
+    {
+        return $this->belongsTo(Categories::class);
+    }
 }

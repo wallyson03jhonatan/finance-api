@@ -19,7 +19,6 @@ return new class extends Migration
             $table->string('description', 255);
             $table->decimal('value', 10, 2);
             $table->enum('registerType', ['income', 'outcome']);
-            $table->string('category', 255);
             $table->timestamps(); // created_at e updated_at
         });
     }

@@ -27,7 +27,7 @@ class TransactionsRequest extends FormRequest
             'description' => 'required|string|min:3|max:255',
             'value' => 'required|numeric',
             'registerType' => 'required|in:income,outcome',
-            'category' => 'string|min:3|max:255',
+            'category_id' => 'required|string|max:100',
         ];
     }
 
