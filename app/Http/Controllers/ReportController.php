@@ -29,10 +29,10 @@ class ReportController extends Controller
 
         $transactions = $this->service->filter($filters);
 
-        $total = $transactions->sum('value');
         $totalIncome = $transactions->where('registerType', 'income')->sum('value');
         $totalOutcome = $transactions->where('registerType', 'outcome')->sum('value');
-
+        $total = $totalIncome - $totalOutcome;
+        
         return ReportResource::collection($transactions)
         ->additional([
             'totals' => [

@@ -48,4 +48,14 @@ Route::middleware('auth:sanctum')->group(function () {
         $request->user()->tokens()->delete();
         return response()->json(['message' => 'Logout realizado']);
     });
+
+    // Check if authenticated
+    Route::get('/check-auth', function (Request $request) {
+        return response()->json([
+            'access_token' => $request->bearerToken(),
+            'user' => $request->user()
+        ]);
+    });
+
+
 });
