@@ -14,7 +14,7 @@ class TransactionsResource extends JsonResource
             'description' => $this->description,
             'value' => "R$ " . number_format($this->value, 2, ',', '.'),
             'type' => $this->registerType,
-            'category_id' => $this->category,
+            'category_id' => $this->category_id,
             'created_at' => $this->created_at?->format('d/m/Y'),
         ];
     }
