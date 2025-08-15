@@ -32,15 +32,15 @@ class ReportController extends Controller
         $totalIncome = $transactions->where('registerType', 'income')->sum('value');
         $totalOutcome = $transactions->where('registerType', 'outcome')->sum('value');
         $total = $totalIncome - $totalOutcome;
-        
+
         return ReportResource::collection($transactions)
-        ->additional([
-            'totals' => [
-                'total' => number_format($total, 2, '.', ''),
-                'total_income' => number_format($totalIncome, 2, '.', ''),
-                'total_outcome' => number_format($totalOutcome, 2, '.', ''),
-            ]
-        ]);
+            ->additional([
+                'totals' => [
+                    'total' => "R$ " . number_format($total, 2, ',', '.'),
+                    'total_income' => "R$ " . number_format($totalIncome, 2, ',', '.'),
+                    'total_outcome' => "R$ " . number_format($totalOutcome, 2, ',', '.'),
+                ]
+            ]);
 
     }
 }
