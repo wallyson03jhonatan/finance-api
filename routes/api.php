@@ -9,7 +9,7 @@ use App\Http\Controllers\TransactionsController;
 use App\Http\Controllers\CategoriesController;
 
 /**
- * Rotas públicas (login e registro)
+ * Rotas públicas (login e registro) ... 
  */
 Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'login']);
