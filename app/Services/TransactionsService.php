@@ -4,38 +4,36 @@ namespace App\Services;
 
 use Illuminate\Support\Collection;
 use App\Repositories\TransactionsRepository;
+use App\Models\Transactions;
 
 class TransactionsService
 {
-    protected TransactionsRepository $repository;
-
-    public function __construct(TransactionsRepository $repository)
-    {
-        $this->repository = $repository;
-    }
+    public function __construct(
+        protected TransactionsRepository $repository
+    ) {}
 
     public function list(int $userId): Collection
     {
         return $this->repository->allByUser($userId);
     }
 
-    public function find(int $id, int $userId)
+    public function find(int $id, int $userId): ?Transactions
     {
         return $this->repository->findByUser($id, $userId);
     }
 
-    public function create(array $data)
+    public function create(array $data): Transactions
     {
         return $this->repository->create($data);
     }
 
-    public function update(int $id, int $userId, array $data)
+    public function update(int $id, int $userId, array $data): ?Transactions
     {
         return $this->repository->updateByUser($id, $userId, $data);
     }
 
-    public function delete(int $id, int $userId): void
+    public function delete(int $id, int $userId): bool
     {
-        $this->repository->deleteByUser($id, $userId);
+        return $this->repository->deleteByUser($id, $userId);
     }
 }

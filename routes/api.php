@@ -9,7 +9,7 @@ use App\Http\Controllers\TransactionsController;
 use App\Http\Controllers\CategoriesController;
 
 /**
- * Rotas públicas (login e registro) ... 
+ * Public routes (register, login and forgot password) ... 
  */
 Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'login']);
@@ -17,18 +17,19 @@ Route::middleware('guest')->group(function () {
 });
 
 /**
- * Rotas protegidas (necessitam de token Sanctum)
+ * Protected routes (using Sanctun token to access)
  */
 Route::middleware('auth:sanctum')->group(function () {
-    // Transações CRUD
+
+    // Transactions 
     Route::prefix('transactions')
         ->controller(TransactionsController::class)
         ->group(function () {
             Route::get('/', 'index');
             Route::get('/{id}', 'show');
-            Route::post('/create', 'store');
-            Route::put('/update/{id}', 'update');
-            Route::delete('/delete/{id}', 'destroy');
+            Route::post('/', 'store');
+            Route::put('/{id}', 'update');
+            Route::delete('/{id}', 'destroy');
         });
 
     // Reports
@@ -49,11 +50,8 @@ Route::middleware('auth:sanctum')->group(function () {
         return response()->json(['message' => 'Logout realizado']);
     });
 
-    // Check if authenticated
-    Route::get('/check-auth', function (Request $request) {
-        return response()->json([
-            'access_token' => $request->bearerToken(),
-            'user' => $request->user()
-        ]);
-    });
+    // Check auth
+    Route::get('/me', fn(Request $request) => response()->json([
+        'user' => $request->user(),
+    ]));
 });

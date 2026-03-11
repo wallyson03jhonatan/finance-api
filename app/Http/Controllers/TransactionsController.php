@@ -6,69 +6,63 @@ use App\Http\Requests\TransactionsRequest;
 use App\Services\TransactionsService;
 use App\Http\Resources\TransactionsResource;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class TransactionsController extends Controller
 {
-    protected $service;
+    public function __construct(
+        protected TransactionsService $service
+    ) {}
 
-    public function __construct(TransactionsService $service)
+    public function index(): AnonymousResourceCollection
     {
-        $this->service = $service;
+        $transactions = $this->service->list(auth()->id());
+
+        return TransactionsResource::collection($transactions);
     }
 
-    public function index()
+    public function show(int $id): TransactionsResource
     {
-        $userId = auth()->id();
-        $transactions = $this->service->list($userId);
+        $transaction = $this->service->find($id, auth()->id());
 
-        return response()->json(TransactionsResource::collection($transactions));
+        abort_if(!$transaction, 404, 'Transação não encontrada.');
+
+        return new TransactionsResource($transaction);
     }
 
-    public function show($id): JsonResponse
-    {
-        $userId = auth()->id();
-        $transaction = $this->service->find($id, $userId);
-
-        if (!$transaction) {
-            return response()->json(['message' => 'Transação não encontrada.'], 404);
-        }
-
-        return response()->json(new TransactionsResource($transaction));
-    }
-
-    public function store(TransactionsRequest $request)
+    public function store(TransactionsRequest $request): JsonResponse
     {
         $data = $request->validated();
         $data['user_id'] = auth()->id();
 
         $transaction = $this->service->create($data);
 
-        return response()->json([
-            'message' => 'Transação criada com sucesso!',
-            'data' => new TransactionsResource($transaction),
-        ], 201);
+        return (new TransactionsResource($transaction))
+            ->response()
+            ->setStatusCode(201);
     }
-    
-    public function update(TransactionsRequest $request, $id): JsonResponse
+
+    public function update(TransactionsRequest $request, int $id): TransactionsResource
     {
-        $data = $request->validated();
-        $userId = auth()->id();
+        $transaction = $this->service->update(
+            $id,
+            auth()->id(),
+            $request->validated()
+        );
 
-        $transaction = $this->service->update($id, $userId, $data);
+        abort_if(!$transaction, 404, 'Transação não encontrada.');
 
-        return response()->json([
-            'message' => 'Transação atualizada com sucesso!',
-            'data'    => new TransactionsResource($transaction),
-        ]);
+        return new TransactionsResource($transaction);
     }
-   
-    public function destroy($id): JsonResponse
+
+    public function destroy(int $id): JsonResponse
     {
-        $userId = auth()->id();
-        $this->service->delete($id, $userId);
+        $deleted = $this->service->delete($id, auth()->id());
+
+        abort_if(!$deleted, 404, 'Transação não encontrada.');
 
         return response()->json([
-            'message' => 'Transação removida com sucesso!',
+            'message' => 'Transação removida com sucesso!'
         ]);
     }
 }
