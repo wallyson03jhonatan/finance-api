@@ -2,43 +2,33 @@
 
 namespace App\Services;
 
-use App\Models\Transactions;
-use Illuminate\Support\Collection;
+use App\Repositories\ReportRepository;
 
 class ReportService
 {
-    public function filter(array $filters): Collection
+    public function __construct(protected ReportRepository $repository)
     {
-        $query = Transactions::query();
-
-        if (!empty($filters['user_id'])) {
-            $query->where('user_id', $filters['user_id']);
-        } 
-        
-        if (!empty($filters['type'])) {
-            $query->where('registerType', $filters['type']);
-        }
-
-        if (!empty($filters['category_id'])) {
-            $query->where('category_id', $filters['category_id']);
-        }
-
-        if (!empty($filters['period'])) {
-            $query->whereBetween('created_at', $this->getPeriodRange($filters['period']));
-        }
-
-        return $query->get();
     }
 
-    private function getPeriodRange(string $period): array
+    public function getReport(array $filters): array
     {
-        $now = now();
-        return match ($period) {
-            'day' => [$now->copy()->startOfDay(), $now->copy()->endOfDay()],
-            'week' => [$now->copy()->startOfWeek(), $now->copy()->endOfWeek()],
-            'month' => [$now->copy()->startOfMonth(), $now->copy()->endOfMonth()],
-            'year' => [$now->copy()->startOfYear(), $now->copy()->endOfYear()],
-            default => [$now->copy()->startOfMonth(), $now->copy()->endOfMonth()],
-        };
+        $transactions = $this->repository->get($filters);
+
+        $totalIncome = $transactions->where('registerType', 'income')->sum('value');
+        $totalOutcome = $transactions->where('registerType', 'outcome')->sum('value');
+
+        return [
+            'transactions' => $transactions,
+            'totals' => [
+                'total' => $this->formatCurrency($totalIncome - $totalOutcome),
+                'total_income' => $this->formatCurrency($totalIncome),
+                'total_outcome' => $this->formatCurrency($totalOutcome),
+            ],
+        ];
+    }
+
+    private function formatCurrency(float $value): string
+    {
+        return "R$ " . number_format($value, 2, ',', '.');
     }
 }

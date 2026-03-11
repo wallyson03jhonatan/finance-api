@@ -3,30 +3,44 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ReportRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     *
-     * @return bool
-     */
-    public function authorize()
+    public function authorize(): bool
     {
         return true;
     }
 
     /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, mixed>
+     * Normalize data before validation
      */
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'type' => $this->type ? strtolower($this->type) : null,
+            'period' => $this->period ? strtolower($this->period) : null,
+        ]);
+    }
+
     public function rules(): array
     {
         return [
-            'type' => 'nullable|in:income,outcome',
-            'period' => 'nullable|in:day,week,month,year',
-            'category_id' => 'nullable|string|max:100',
+            'type' => [
+                'nullable',
+                Rule::in(['income', 'outcome'])
+            ],
+
+            'period' => [
+                'nullable',
+                Rule::in(['day', 'week', 'month', 'year'])
+            ],
+
+            'category_id' => [
+                'nullable',
+                'string',
+                'max:100'
+            ],
         ];
     }
 
@@ -35,7 +49,16 @@ class ReportRequest extends FormRequest
         return [
             'type.in' => 'O tipo deve ser "income" ou "outcome".',
             'period.in' => 'O período deve ser "day", "week", "month" ou "year".',
-            'category.string' => 'A categoria deve ser um texto.',
+            'category_id.string' => 'A categoria deve ser um texto.',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'type' => 'tipo',
+            'period' => 'período',
+            'category_id' => 'categoria',
         ];
     }
 }

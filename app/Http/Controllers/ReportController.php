@@ -10,37 +10,28 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class ReportController extends Controller
 {
-    protected ReportService $service;
-
-    public function __construct(ReportService $service)
-    {
-        $this->service = $service;
-    }
+    public function __construct(
+        protected ReportService $service
+    ) {}
 
     public function index(ReportRequest $request): AnonymousResourceCollection|JsonResponse
     {
         $userId = auth()->id();
+
         if (!$userId) {
-            return response()->json(['message' => 'Não autorizado'], 401);
+            return response()->json(['message' => 'Unauthorized'], 401);
         }
 
-        $filters = $request->validated();
-        $filters['user_id'] = $userId;
+        $filters = [
+            ...$request->validated(),
+            'user_id' => $userId
+        ];
 
-        $transactions = $this->service->filter($filters);
+        $result = $this->service->getReport($filters);
 
-        $totalIncome = $transactions->where('registerType', 'income')->sum('value');
-        $totalOutcome = $transactions->where('registerType', 'outcome')->sum('value');
-        $total = $totalIncome - $totalOutcome;
-
-        return ReportResource::collection($transactions)
+        return ReportResource::collection($result['transactions'])
             ->additional([
-                'totals' => [
-                    'total' => "R$ " . number_format($total, 2, ',', '.'),
-                    'total_income' => "R$ " . number_format($totalIncome, 2, ',', '.'),
-                    'total_outcome' => "R$ " . number_format($totalOutcome, 2, ',', '.'),
-                ]
+                'totals' => $result['totals']
             ]);
-
     }
 }
