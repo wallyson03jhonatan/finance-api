@@ -39,9 +39,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix("categories")->controller(CategoriesController::class)->group(function () {
         Route::get('/', 'index');
         Route::get('/{id}', 'show');
-        Route::post('/create', 'store');
-        Route::put('/update/{id}', 'update');
-        Route::delete('/delete/{id}', 'destroy');
+        Route::post('/', 'store');
+        Route::put('/{id}', 'update');
+        Route::delete('/{id}', 'destroy');
     });
 
     // Logout

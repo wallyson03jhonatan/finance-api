@@ -3,41 +3,64 @@
 namespace App\Repositories;
 
 use App\Models\Categories;
+use Illuminate\Support\Collection;
 
 class CategoriesRepository
 {
 
-    public function allByUser(int $userId)
+    public function allByUser(int $userId): Collection
     {
         return Categories::where('user_id', $userId)->get();
-    } 
+    }
 
-    public function findByUser(int $id, int $userId)
+    public function findByUser(int $id, int $userId): ?Categories
     {
         return Categories::where('id', $id)
             ->where('user_id', $userId)
-            ->first(); 
+            ->first();
     }
 
-    public function create(array $data)
+    public function create(array $data): Categories
     {
         return Categories::create($data);
     }
 
-    public function updateByUser(int $id, int $userId, array $data)
+    public function updateByUser(int $id, int $userId, array $data): ?Categories
     {
-        $transaction = Categories::where('id', $id)
+        $category = Categories::where('id', $id)
             ->where('user_id', $userId)
-            ->firstOrFail();
-        $transaction->update($data);
-        return $transaction;
+            ->first();
+
+        if (!$category) {
+            return null;
+        }
+
+        $category->update($data);
+
+        return $category->refresh();
     }
 
-    public function deleteByUser(int $id, int $userId): void
+    public function deleteByUser(int $id, int $userId): bool
     {
-        $transaction = Categories::where('id', $id)
+        $category = Categories::where('id', $id)
             ->where('user_id', $userId)
-            ->firstOrFail();
-        $transaction->delete();
+            ->first();
+
+        if (!$category) {
+            return false;
+        }
+
+        return $category->delete();
+    }
+
+    public function isInUse(int $id): bool
+    {
+        $category = Categories::where('id', $id)->first();
+
+        if (!$category) {
+            return false;
+        }
+
+        return $category->transactions()->exists();
     }
 }

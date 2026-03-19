@@ -24,8 +24,20 @@ class CategoriesRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'string|min:3|max:60',
+            'name' => 'required|string|min:3|max:60',
             'description' => 'string|min:3|max:255',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'O nome é obrigatório.',
+            'name.min' => 'O nome deve ter no mínimo 3 caracteres.',
+            'name.max' => 'O nome pode ter no máximo 255 caracteres.',
+
+            'description.min' => 'A descrição deve ter no mínimo 3 caracteres.',
+            'description.max' => 'A descrição pode ter no máximo 255 caracteres.',
         ];
     }
 }

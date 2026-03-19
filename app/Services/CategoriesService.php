@@ -2,16 +2,16 @@
 
 namespace App\Services;
 
+use App\Exceptions\CategoryInUseException;
 use Illuminate\Support\Collection;
 use App\Repositories\CategoriesRepository;
+use App\Models\Categories;
 
 class CategoriesService
 {
-    protected CategoriesRepository $repository;
 
-    public function __construct(CategoriesRepository $repository)
+    public function __construct(protected CategoriesRepository $repository)
     {
-        $this->repository = $repository;
     }
 
     public function list(int $userId): Collection
@@ -19,23 +19,27 @@ class CategoriesService
         return $this->repository->allByUser($userId);
     }
 
-    public function find(int $id, int $userId)
+    public function find(int $id, int $userId): ?Categories
     {
         return $this->repository->findByUser($id, $userId);
     }
 
-    public function create(array $data)
+    public function create(array $data): Categories
     {
         return $this->repository->create($data);
     }
 
-    public function update(int $id, int $userId, array $data)
+    public function update(int $id, int $userId, array $data): ?Categories
     {
         return $this->repository->updateByUser($id, $userId, $data);
     }
 
-    public function delete(int $id, int $userId): void
+    public function delete(int $id, int $userId): bool
     {
-        $this->repository->deleteByUser($id, $userId);
+        if ($this->repository->isInUse($id)) {
+            throw new CategoryInUseException();
+        }
+        
+        return $this->repository->deleteByUser($id, $userId);
     }
 }
