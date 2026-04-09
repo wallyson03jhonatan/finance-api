@@ -60,5 +60,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // Profile 
     Route::prefix('profile')->controller(ProfileController::class)->group(function () {
         Route::put('/info', 'updateInfo');
+        Route::put('/password', 'updatePassword');
     });
 });
