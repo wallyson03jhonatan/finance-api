@@ -1,66 +1,159 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Finance API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A RESTful API for personal finance management — handles authentication, transactions, categories, and financial reports.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Tech Stack
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+| Layer | Technology |
+|---|---|
+| Language | PHP ^8.2 |
+| Framework | Laravel ^11.0 |
+| Authentication | Laravel Sanctum ^4.0 |
+| HTTP Client | Guzzle ^7.2 |
+| Testing | Pest ^2.0 |
+| Code Style | Laravel Pint ^1.0 |
+| Dev Environment | Laravel Sail ^1.26 |
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Architecture
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+The project follows a layered **Controller → Service → Repository** pattern:
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+- **Controllers** — Receive HTTP requests, delegate to Services, return API Resources or JSON responses. No business logic.
+- **Services** — Contain all business logic (e.g., computing report totals, enforcing ownership). Depend on Repositories for data access.
+- **Repositories** — Encapsulate all Eloquent queries. The single point of database interaction per domain.
+- **Form Requests** — Handle input validation and authorization before the request reaches the controller.
+- **API Resources** — Transform Eloquent models into consistent, typed JSON responses.
+- **Custom Exceptions** — Domain-specific exceptions (e.g., `CategoryInUseException`) provide clean error handling separate from business logic.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## Project Structure
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+```
+app/
+├── Exceptions/         # Custom domain exceptions and global exception handler
+├── Http/
+│   ├── Controllers/    # Route handlers — thin layer, delegates to Services
+│   │   └── Auth/       # Login and Register controllers
+│   ├── Middleware/     # HTTP middleware (e.g., authentication guards)
+│   ├── Requests/       # Form Request classes for input validation
+│   └── Resources/      # API Resource classes for JSON response transformation
+├── Models/             # Eloquent models (User, Transactions, Categories)
+├── Providers/          # Service providers for dependency binding
+├── Repositories/       # Database query encapsulation per domain
+└── Services/           # Business logic layer
+```
 
-### Premium Partners
+---
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+## API Endpoints
 
-## Contributing
+### Auth
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+| Method | Endpoint | Description | Auth Required |
+|---|---|---|---|
+| `POST` | `/api/login` | Authenticate and receive a Sanctum token | No |
+| `POST` | `/api/register` | Create a new user account | No |
+| `POST` | `/api/logout` | Revoke all tokens for the authenticated user | Yes |
+| `GET` | `/api/me` | Return the currently authenticated user | Yes |
 
-## Code of Conduct
+### Profile
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+| Method | Endpoint | Description | Auth Required |
+|---|---|---|---|
+| `PUT` | `/api/profile/info` | Update name and email | Yes |
+| `PUT` | `/api/profile/password` | Update password | Yes |
 
-## Security Vulnerabilities
+### Categories
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+| Method | Endpoint | Description | Auth Required |
+|---|---|---|---|
+| `GET` | `/api/categories` | List all categories | Yes |
+| `GET` | `/api/categories/{id}` | Get a single category | Yes |
+| `POST` | `/api/categories` | Create a category | Yes |
+| `PUT` | `/api/categories/{id}` | Update a category | Yes |
+| `DELETE` | `/api/categories/{id}` | Delete a category | Yes |
 
-## License
+### Transactions
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+| Method | Endpoint | Description | Auth Required |
+|---|---|---|---|
+| `GET` | `/api/transactions` | List all transactions for the user | Yes |
+| `GET` | `/api/transactions/{id}` | Get a single transaction | Yes |
+| `POST` | `/api/transactions` | Create a transaction | Yes |
+| `PUT` | `/api/transactions/{id}` | Update a transaction | Yes |
+| `DELETE` | `/api/transactions/{id}` | Delete a transaction | Yes |
+
+### Reports
+
+| Method | Endpoint | Description | Auth Required |
+|---|---|---|---|
+| `GET` | `/api/report` | Get filtered transactions with income/outcome totals | Yes |
+
+---
+
+## Local Setup
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/wallyson03jhonatan/finance-api.git
+cd finance-api
+```
+
+### 2. Install dependencies
+
+```bash
+composer install
+```
+
+### 3. Configure environment
+
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+
+Edit `.env` and set your database and mail credentials (see [Environment Variables](#environment-variables) below).
+
+### 4. Run migrations
+
+```bash
+php artisan migrate
+```
+
+### 5. Start the development server
+
+```bash
+php artisan serve
+```
+
+The API will be available at `http://localhost:8000`.
+
+---
+
+## Environment Variables
+
+| Variable | Purpose | Example |
+|---|---|---|
+| `APP_NAME` | Application name used in responses and mail | `Finance API` |
+| `APP_ENV` | Environment context | `local` |
+| `APP_KEY` | Encryption key (generated via `artisan key:generate`) | `base64:...` |
+| `APP_URL` | Base application URL | `http://localhost` |
+| `DB_CONNECTION` | Database driver | `mysql` |
+| `DB_HOST` | Database host | `127.0.0.1` |
+| `DB_PORT` | Database port | `3306` |
+| `DB_DATABASE` | Database name | `finance` |
+| `DB_USERNAME` | Database user | `root` |
+| `DB_PASSWORD` | Database password | `secret` |
+| `MAIL_MAILER` | Mail transport driver | `smtp` |
+| `MAIL_HOST` | SMTP server host | `smtp.mailtrap.io` |
+| `MAIL_PORT` | SMTP server port | `2525` |
+| `MAIL_USERNAME` | SMTP credentials — username | `your_username` |
+| `MAIL_PASSWORD` | SMTP credentials — password | `your_password` |
+| `MAIL_FROM_ADDRESS` | Default sender address | `noreply@finance.app` |
+| `MAIL_FROM_NAME` | Default sender name | `Finance API` |
