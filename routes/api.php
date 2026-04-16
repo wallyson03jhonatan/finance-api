@@ -6,6 +6,9 @@ use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TransactionsController;
+use App\Http\Controllers\EmailVerificationController;
+
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -18,9 +21,22 @@ Route::middleware('guest')->group(function () {
 });
 
 /**
+ * Protected routes + email verification (using Sanctun token to access)
+ */
+Route::middleware('auth:sanctum')
+    ->prefix('email')
+    ->controller(EmailVerificationController::class)
+    ->group(function () {
+        Route::post('/verify', 'verify');
+        Route::post('/resend', 'resend');
+    });
+
+
+
+/**
  * Protected routes (using Sanctun token to access)
  */
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'verified.email'])->group(function () {
 
     // Transactions
     Route::prefix('transactions')

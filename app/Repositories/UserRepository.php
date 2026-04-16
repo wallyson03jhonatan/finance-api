@@ -4,6 +4,8 @@ namespace App\Repositories;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Carbon\Carbon;
+
 
 
 class UserRepository
@@ -20,5 +22,29 @@ class UserRepository
     {
         $user = User::findOrFail($userId);
         $user->update(['password' => Hash::make($newPassword)]);
+    }
+
+
+    public function setPendingVerification(int $userId, string $code): void
+    {
+        User::where('id', $userId)->update([
+            'email_verification_status' => 'pending',
+            'email_verification_token' => $code,
+            'email_verified_at' => null,
+        ]);
+    }
+
+    public function confirmVerification(int $userId): void
+    {
+        User::where('id', $userId)->update([
+            'email_verification_status' => 'confirmed',
+            'email_verification_token' => null,
+            'email_verified_at' => Carbon::now(),
+        ]);
+    }
+
+    public function findByVerificationToken(string $code): ?User
+    {
+        return User::where('email_verification_token', $code)->first();
     }
 }

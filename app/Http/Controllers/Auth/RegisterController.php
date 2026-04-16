@@ -4,32 +4,35 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RegisterRequest;
-use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Services\EmailVerificationService;
+use App\Http\Resources\UserResource;
+use Illuminate\Http\JsonResponse;
 
 class RegisterController extends Controller
 {
-    public function register(RegisterRequest $request) {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:6',
-        ]);
+    public function __construct(protected EmailVerificationService $emailVerificationService)
+    {
+    }
+
+    public function register(RegisterRequest $request): JsonResponse
+    {
+        $data = $request->validated();
 
         $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => bcrypt($validated['password']),
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => bcrypt($data['password']),
         ]);
-
-        Auth::login($user);
 
         $token = $user->createToken('api_token')->plainTextToken;
 
+        $this->emailVerificationService->sendCode($user->id, $user->email);
+
         return response()->json([
-            'user' => $user,
+            'user' => new UserResource($user),
             'access_token' => $token,
             'token_type' => 'Bearer',
-        ]);
+        ], 201);
     }
 }
