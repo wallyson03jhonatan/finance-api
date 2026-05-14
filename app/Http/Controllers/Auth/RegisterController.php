@@ -23,6 +23,7 @@ class RegisterController extends Controller
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => bcrypt($data['password']),
+            'email_verification_status' => 'pending',
         ]);
 
         $token = $user->createToken('api_token')->plainTextToken;
