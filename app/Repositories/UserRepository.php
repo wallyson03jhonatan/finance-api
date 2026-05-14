@@ -31,6 +31,7 @@ class UserRepository
             'email_verification_status' => 'pending',
             'email_verification_token' => $code,
             'email_verified_at' => null,
+            'email_verification_sent_at'  => Carbon::now(),
         ]);
     }
 

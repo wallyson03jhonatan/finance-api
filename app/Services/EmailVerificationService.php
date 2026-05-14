@@ -26,13 +26,14 @@ class EmailVerificationService
     {
         $user = $this->repository->findByVerificationToken($code);
 
-        if (!$user) {
+        if (!$user || !$user->email_verification_sent_at) {
             throw ValidationException::withMessages([
                 'code' => 'Código inválido.',
             ]);
         }
 
-        if ($user->updated_at->diffInMinutes(now()) > 15) {
+
+        if ($user->email_verification_sent_at->diffInMinutes(now()) > 15) {
             throw ValidationException::withMessages([
                 'code' => 'Código expirado. Solicite um novo.',
             ]);

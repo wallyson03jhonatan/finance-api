@@ -9,20 +9,30 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->enum('email_verification_status', ['pending', 'confirmed'])
-                  ->default('pending')
-                  ->after('email');
-            $table->string('email_verification_token', 6)->nullable()->after('email_verification_status');
+            if (!Schema::hasColumn('users', 'email_verification_status')) {
+                $table->enum('email_verification_status', ['pending', 'confirmed'])
+                      ->default('pending')
+                      ->after('email');
+            }
+
+            if (!Schema::hasColumn('users', 'email_verification_token')) {
+                $table->string('email_verification_token', 6)
+                      ->nullable()
+                      ->after('email_verification_status');
+            }
         });
     }
 
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn([
-                'email_verification_status',
-                'email_verification_token',
-            ]);
+            if (Schema::hasColumn('users', 'email_verification_status')) {
+                $table->dropColumn('email_verification_status');
+            }
+            
+            if (Schema::hasColumn('users', 'email_verification_token')) {
+                $table->dropColumn('email_verification_token');
+            }
         });
     }
 };
