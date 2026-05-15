@@ -31,7 +31,7 @@ class UserRepository
             'email_verification_status' => 'pending',
             'email_verification_token' => $code,
             'email_verified_at' => null,
-            'email_verification_sent_at'  => Carbon::now(),
+            'email_verification_sent_at' => Carbon::now(),
         ]);
     }
 
@@ -47,5 +47,10 @@ class UserRepository
     public function findByVerificationToken(string $code): ?User
     {
         return User::where('email_verification_token', $code)->first();
+    }
+
+    public function findByEmail(string $email): ?User
+    {
+        return User::where('email', $email)->first();
     }
 }

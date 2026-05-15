@@ -7,7 +7,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TransactionsController;
 use App\Http\Controllers\EmailVerificationController;
-
+use App\Http\Controllers\PasswordResetController;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'login']);
     Route::post('/register', [RegisterController::class, 'register']);
+    Route::post('/password/forgot', [PasswordResetController::class, 'forgot']);
+    Route::post('/password/reset',  [PasswordResetController::class, 'reset']);
 });
 
 /**
@@ -73,7 +75,7 @@ Route::middleware(['auth:sanctum', 'verified.email'])->group(function () {
         'user' => $request->user(),
     ]));
 
-    // Profile 
+    // Profile
     Route::prefix('profile')->controller(ProfileController::class)->group(function () {
         Route::put('/info', 'updateInfo');
         Route::put('/password', 'updatePassword');
