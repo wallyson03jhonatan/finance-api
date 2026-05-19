@@ -16,6 +16,8 @@ A RESTful API for personal finance management — handles authentication, transa
 | Code Style | Laravel Pint ^1.0 |
 | Dev Environment | Laravel Sail ^1.26 |
 
+*Note: Automated tests using Pest will be introduced as soon as possible.*
+
 ---
 
 ## Architecture
@@ -25,6 +27,7 @@ The project follows a layered **Controller → Service → Repository** pattern:
 - **Controllers** — Receive HTTP requests, delegate to Services, return API Resources or JSON responses. No business logic.
 - **Services** — Contain all business logic (e.g., computing report totals, enforcing ownership). Depend on Repositories for data access.
 - **Repositories** — Encapsulate all Eloquent queries. The single point of database interaction per domain.
+- **Middleware** — Intercept and filter HTTP requests (e.g., `verified.email` to block unverified users with a 403 response).
 - **Form Requests** — Handle input validation and authorization before the request reaches the controller.
 - **API Resources** — Transform Eloquent models into consistent, typed JSON responses.
 - **Custom Exceptions** — Domain-specific exceptions (e.g., `CategoryInUseException`) provide clean error handling separate from business logic.
@@ -39,9 +42,10 @@ app/
 ├── Http/
 │   ├── Controllers/    # Route handlers — thin layer, delegates to Services
 │   │   └── Auth/       # Login and Register controllers
-│   ├── Middleware/     # HTTP middleware (e.g., authentication guards)
+│   ├── Middleware/     # HTTP middleware (e.g., authentication guards and verified.email)
 │   ├── Requests/       # Form Request classes for input validation
 │   └── Resources/      # API Resource classes for JSON response transformation
+├── Mail/               # Mailable classes for email notifications (verification, password resets)
 ├── Models/             # Eloquent models (User, Transactions, Categories)
 ├── Providers/          # Service providers for dependency binding
 ├── Repositories/       # Database query encapsulation per domain
@@ -60,13 +64,22 @@ app/
 | `POST` | `/api/register` | Create a new user account | No |
 | `POST` | `/api/logout` | Revoke all tokens for the authenticated user | Yes |
 | `GET` | `/api/me` | Return the currently authenticated user | Yes |
+| `POST` | `/api/password/forgot` | Send password reset link via email | No |
+| `POST` | `/api/password/reset` | Reset password using token (revokes all active sessions on success) | No |
+
+### Email Verification
+
+| Method | Endpoint | Description | Auth Required |
+|---|---|---|---|
+| `POST` | `/api/email/verify` | Verify email with 6-digit code (15-minute expiry) | Yes |
+| `POST` | `/api/email/resend` | Resend 6-digit verification code | Yes |
 
 ### Profile
 
 | Method | Endpoint | Description | Auth Required |
 |---|---|---|---|
 | `PUT` | `/api/profile/info` | Update name and email | Yes |
-| `PUT` | `/api/profile/password` | Update password | Yes |
+| `PUT` | `/api/profile/password` | Update password (revokes all active sessions) | Yes |
 
 ### Categories
 
@@ -144,6 +157,7 @@ The API will be available at `http://localhost:8000`.
 | `APP_ENV` | Environment context | `local` |
 | `APP_KEY` | Encryption key (generated via `artisan key:generate`) | `base64:...` |
 | `APP_URL` | Base application URL | `http://localhost` |
+| `FRONTEND_URL` | URL of the frontend application | `http://localhost:3000` |
 | `DB_CONNECTION` | Database driver | `mysql` |
 | `DB_HOST` | Database host | `127.0.0.1` |
 | `DB_PORT` | Database port | `3306` |
