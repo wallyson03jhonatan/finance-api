@@ -16,7 +16,7 @@ A RESTful API for personal finance management — handles authentication, transa
 | Code Style | Laravel Pint ^1.0 |
 | Dev Environment | Laravel Sail ^1.26 |
 
-*Note: Automated tests using Pest will be introduced as soon as possible.*
+*Note: More automated tests using Pest will be introduced as soon as possible.*
 
 ---
 
