@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\EmailVerificationService;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 class RegisterController extends Controller
 {
@@ -28,7 +29,15 @@ class RegisterController extends Controller
 
         $token = $user->createToken('api_token')->plainTextToken;
 
-        $this->emailVerificationService->sendCode($user->id, $user->email);
+        try {
+            $this->emailVerificationService->sendCode($user->id, $user->email);
+        } catch (\Throwable $e) {
+            Log::error('Falha ao enviar código de verificação no registro', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+            // usuário já criado e com token — segue o fluxo; código pode ser reenviado via /api/email/resend
+        }
 
         return response()->json([
             'user' => new UserResource($user),
