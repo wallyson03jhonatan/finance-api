@@ -19,9 +19,17 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => [
+        'http://localhost:3000', // Dev environment
+        'finance-app-alpha-blush.vercel.app', // Production environment
 
-    'allowed_origins_patterns' => [],
+    ],
+
+
+    'allowed_origins_patterns' => [
+        '*localhost*',
+        '*vercel.app*',
+    ],
 
     'allowed_headers' => ['*'],
 
