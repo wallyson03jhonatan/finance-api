@@ -9,7 +9,7 @@ A RESTful API for personal finance management — handles authentication, transa
 | Layer | Technology |
 |---|---|
 | Language | PHP ^8.2 |
-| Framework | Laravel ^11.0 |
+| Framework | Laravel ^12.0 |
 | Authentication | Laravel Sanctum ^4.0 |
 | HTTP Client | Guzzle ^7.2 |
 | Testing | Pest ^2.0 |
