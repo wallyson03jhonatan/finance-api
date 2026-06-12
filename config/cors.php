@@ -21,14 +21,13 @@ return [
 
     'allowed_origins' => [
         'http://localhost:3000', // Dev environment
-        'finance-app-alpha-blush.vercel.app', // Production environment
-
+        'https://finance-app-alpha-blush.vercel.app', // Production environment
     ],
 
 
     'allowed_origins_patterns' => [
-        '*localhost*',
-        '*vercel.app*',
+        '#^http://localhost(:\d+)?$#',            // qualquer porta de localhost
+        '#^https://([a-z0-9-]+\.)*vercel\.app$#', // qualquer subdomínio *.vercel.app (incl. previews)
     ],
 
     'allowed_headers' => ['*'],
