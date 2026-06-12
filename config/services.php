@@ -21,6 +21,10 @@ return [
         'scheme' => 'https',
     ],
 
+    'mailtrap' => [
+        'dsn' => env('MAILTRAP_DSN'),
+    ],
+
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],
